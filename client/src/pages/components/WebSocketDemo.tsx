@@ -9,6 +9,8 @@ export const WebSocketDemo = () => {
     [] as MessageEvent<unknown>[]
   );
 
+  const [weight, setWeight] = useState<number>(0.5);
+
   const { sendMessage, lastMessage, readyState } = useWebSocket(SERVER_URL);
 
   useEffect(() => {
@@ -17,7 +19,12 @@ export const WebSocketDemo = () => {
     }
   }, [lastMessage, setMessageHistory]);
 
-  const handleClickSendMessage = useCallback(() => sendMessage("Hello"), []);
+  const nextCoinFlip = () => (Math.random() > weight ? 1.0 : 0.0);
+
+  const handleClickSendMessage = useCallback(
+    () => sendMessage(`${nextCoinFlip()}`),
+    []
+  );
 
   const connectionStatus = {
     [ReadyState.CONNECTING]: "Connecting",
@@ -29,10 +36,23 @@ export const WebSocketDemo = () => {
 
   return (
     <div>
-      <span>{`Connected To: ${SERVER_URL}`}</span>
-      <button onClick={handleClickSendMessage}>Click Me to send 'Hello'</button>
       <span>The WebSocket is currently {connectionStatus}</span>
-      {lastMessage ? <span>Last message: {lastMessage.data}</span> : null}
+      <br />
+      <input
+        type="number"
+        value={weight}
+        onChange={(event) => {
+          try {
+            const value = parseFloat(event.target.value);
+            console.log(value);
+            setWeight(value);
+          } catch (e) {
+            // Do nothing
+          }
+        }}
+      />
+      <button onClick={handleClickSendMessage}>Send</button>
+      <br />
       <ul>
         {messageHistory.map((message, idx) => (
           <span key={idx}>{message ? `${message.data} ` : null}</span>
