@@ -3,6 +3,9 @@ import useWebSocket, { ReadyState } from "react-use-websocket";
 import { SERVER_URL } from "../constants";
 import { ChillyBabyChart } from "./ChillyBabyChart";
 
+const INTERVAL = 1000; //ms between each timestep
+const target = 37.7;
+
 export const ChillyBaby = () => {
   const [babyLocation, setBabyLocation] = useState(150.0);
 
@@ -19,7 +22,7 @@ export const ChillyBaby = () => {
     if (lastJsonMessage !== null) {
       const { velocity } = lastJsonMessage;
       setBabyLocation(babyLocation + velocity);
-      setTimeout(sendLatestState, 1500);
+      setTimeout(sendLatestState, INTERVAL);
     }
   }, [lastJsonMessage]);
 
@@ -27,10 +30,5 @@ export const ChillyBaby = () => {
     return null;
   }
 
-  return (
-    <ChillyBabyChart
-      data={[{ position: babyLocation, height: 20 }]}
-      targetPosition={37.7}
-    />
-  );
+  return <ChillyBabyChart targetPosition={target} location={babyLocation} />;
 };
