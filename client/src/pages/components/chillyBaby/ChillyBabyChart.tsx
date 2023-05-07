@@ -10,13 +10,20 @@ const StyledReactECharts = styled(ReactECharts)`
 `;
 
 type Props = {
-  location: number;
+  position: number;
   targetPosition: number;
+  predictedPositions: number[];
 };
+const xMin = -200;
 const xMax = 200;
+const yMin = 0;
 const yMax = 40;
 
-export const ChillyBabyChart = ({ location, targetPosition }: Props) => {
+export const ChillyBabyChart = ({
+  position,
+  targetPosition,
+  predictedPositions = [],
+}: Props) => {
   const targetLine = {
     animation: false,
     label: {
@@ -44,15 +51,22 @@ export const ChillyBabyChart = ({ location, targetPosition }: Props) => {
   };
 
   const option = {
-    xAxis: { min: 0, max: xMax },
-    yAxis: { min: 0, max: yMax },
+    title: { text: "Agent", textStyle: { color: "white" } },
+    xAxis: { min: xMin, max: xMax },
+    yAxis: { min: yMin, max: yMax },
     series: [
       {
         symbolSize: 20,
-        data: [[location, yMax / 2]],
+        data: [[position, (yMax - yMin) / 2]],
         type: "scatter",
         markLine: targetLine,
       },
+      ...predictedPositions.map((val, index) => ({
+        type: "scatter",
+        symbolSize: 15,
+        data: [[val, (yMax - yMin) / 2]],
+        color: `rgb(124, 252, 0, ${0.9 - index / 10})`,
+      })),
     ],
   };
 
