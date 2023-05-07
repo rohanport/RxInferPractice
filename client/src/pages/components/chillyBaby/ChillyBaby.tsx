@@ -43,6 +43,23 @@ export const ChillyBaby = () => {
     setTimeout(sendLatestState, INTERVAL);
   }, [lastJsonMessage]);
 
+  useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      const moveDistance = 10;
+      if (event.key === "ArrowRight") {
+        setPosition(position + moveDistance);
+      } else if (event.key === "ArrowLeft") {
+        setPosition(position - moveDistance);
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyPress);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyPress);
+    };
+  }, [position, setPosition]);
+
   if (readyState !== ReadyState.OPEN) {
     return null;
   }
