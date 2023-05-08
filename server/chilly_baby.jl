@@ -16,7 +16,6 @@ using RxInfer, Random
     position_k = randomvar(T) # Predicted positions
     
     println("making internal states")
-    # temp_k = randomvar(T) # Predicted temp
     final_temp = randomvar() # Predicted temp
     
     println("making velocity states")
@@ -32,9 +31,6 @@ using RxInfer, Random
         position_k[k] ~ NormalMeanVariance(velocity_k[k] + prev_position, accuracy)
         prev_position = position_k[k]
         println("got position")
-
-        # temp_k[k] ~ NormalMeanVariance(fire_temp - position_k[k], accuracy)
-        # println("got temp")
     end
 
     final_temp ~ NormalMeanVariance(fire_temp - position_k[T], accuracy)
@@ -43,10 +39,7 @@ using RxInfer, Random
     println("model done")
 end
 
-
-
 function create_agent(sensory_datastream, initial_position)
-
     lookahead = 10
 
     pred_means = (distributions) -> push!([mean(distributions[n]) for n=2:lookahead], 0.0)
@@ -56,7 +49,6 @@ function create_agent(sensory_datastream, initial_position)
         pred_velocity_m_k = pred_means(q(velocity_k))
         pred_velocity_v_k = pred_vars(q(velocity_k))
     end
-
      
     engine = rxinference(
         model         = chilly_baby(lookahead),

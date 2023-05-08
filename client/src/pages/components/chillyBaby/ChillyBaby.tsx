@@ -16,14 +16,10 @@ export const ChillyBaby = () => {
   const [freeEnergyHistory, setFreeEnergyHistory] = useState(
     new Array(freeEnergyHistoryLength).fill(0)
   );
-
-  const sendLatestState = () =>
-    sendJsonMessage({
-      position,
-    });
+  const [sendLatestState, setSendLatestState] = useState(false);
 
   const { sendJsonMessage, lastJsonMessage, readyState } = useWebSocket<{
-    velocities: number[];
+    velocity: number;
     predicted_positions: number[];
     free_energy: number;
   }>(SERVER_URL, { onMessage: ({ data }) => console.log(JSON.parse(data)) });
@@ -32,16 +28,29 @@ export const ChillyBaby = () => {
     if (lastJsonMessage === null) return;
 
     const {
-      velocities,
+      velocity,
       predicted_positions: newPredictedPositions,
       free_energy: freeEnergy,
     } = lastJsonMessage;
-    if (velocities) setPosition(position + velocities[0]);
-    if (newPredictedPositions) setPredictedPositions(newPredictedPositions);
-    if (freeEnergy)
+    if (newPredictedPositions !== undefined)
+      setPredictedPositions(newPredictedPositions);
+    if (freeEnergy !== undefined)
       setFreeEnergyHistory(freeEnergyHistory.slice(1).concat([freeEnergy]));
-    setTimeout(sendLatestState, INTERVAL);
+    if (velocity !== undefined) {
+      setPosition(position + velocity);
+      setTimeout(() => setSendLatestState(true), INTERVAL);
+    }
   }, [lastJsonMessage]);
+
+  useEffect(() => {
+    if (!sendLatestState) return;
+    const message = {
+      position,
+    };
+    console.log(message);
+    sendJsonMessage(message);
+    setSendLatestState(false);
+  }, [sendLatestState, position]);
 
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {

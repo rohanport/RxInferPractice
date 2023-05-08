@@ -16,10 +16,17 @@ using HTTP.WebSockets, JSON
 chilly_baby_server = WebSockets.listen("0.0.0.0", 8081) do ws
     datastream = Subject(NamedTuple{(:position,), Tuple{Float64}})
     engine = create_agent(datastream, 162.3)
-    subscribe!(engine.posteriors[:velocity_k] |> with_latest(engine.posteriors[:position_k], engine.free_energy), ((velocities, positions, free_energy),) -> begin 
-            actions = [mean(velocities[n]) for n=1:length(velocities)]
+    subscribe!(engine.posteriors[:position_k], (positions) -> begin 
             predicted_positions = [mean(positions[n]) for n=1:length(positions)]
-            response = Dict([("velocities", actions), ("predicted_positions", predicted_positions), ("free_energy", free_energy)])
+            response = Dict([("predicted_positions", predicted_positions)])
+            println(response)
+            send(ws, JSON.json(response))
+        end
+    )
+
+    subscribe!(engine.posteriors[:velocity_k] |> with_latest(engine.free_energy), ((velocities, free_energy),) -> begin 
+            action = mean(velocities[1])
+            response = Dict([("velocity", action), ("free_energy", free_energy)])
             println(response)
             send(ws, JSON.json(response))
         end
